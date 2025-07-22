@@ -1,0 +1,25 @@
+# Makefile for GlamorousToolkit runner
+
+COMPILER ?= gcc
+CC  = CC $(COMPILER)
+LNK = LNK $(COMPILER)
+RC  = RC $(COMPILER)
+
+CFLAGS if not ansi += -DUNICODE -D_UNICODE
+CFLAGS if not $(COMPILER:gcc=) += -Werror
+
+OBJS = GlamorousToolkit.obj GlamorousToolkit.rc.obj
+LIBS = shell32.lib
+
+link unicode: GlamorousToolkit.exe
+GlamorousToolkit.exe: $(OBJS)
+	$(LNK)W $@ $(OBJS) $(LIBS)
+
+.c.obj:
+	+$(CC) $(CFLAGS) $<
+
+GlamorousToolkit.rc.obj: GlamorousToolkit.rc
+	+$(RC) GlamorousToolkit.rc
+
+clean:
+	del $(OBJS)
