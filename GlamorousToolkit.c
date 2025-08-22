@@ -7,18 +7,30 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	UNREFERENCED_PARAMETER(lpCmdLineA);
 	UNREFERENCED_PARAMETER(nCmdShow);
 	
-	TCHAR szPath[MAX_PATH];
-	GetModuleFileName(0, szPath, MAX_PATH);
+	INT_PTR res = 1;
+	
+	TCHAR szPath[MAX_PATH + 24 + 16];
+	DWORD dwRes = GetModuleFileName(0, szPath, MAX_PATH);
+	if (dwRes == MAX_PATH)
+	{
+		goto ErrorMessage;
+	}
 	
 	LPTSTR lpEnd = szPath + lstrlen(szPath);
 	for (; lpEnd > szPath && lpEnd[-1] != '\\'; lpEnd--);
 	lstrcpy(lpEnd, TEXT("bin\\GlamorousToolkit.exe"));
 	
-	INT_PTR res = (INT_PTR)ShellExecute(NULL, TEXT("open"), szPath, NULL, NULL, SW_SHOW);
+	lpEnd += lstrlen(lpEnd);
+	lstrcpy(lpEnd, TEXT(":Zone.Identifier"));
+	DeleteFile(szPath);
+	*lpEnd = '\0';
+	
+	res = (INT_PTR)ShellExecute(NULL, TEXT("open"), szPath, NULL, NULL, SW_SHOW);
 	if (res <= 32)
 	{
-		MessageBox(NULL, TEXT("Glamorous Toolkit konnte nicht gefunden werden!\n\nHaben Sie die ganze ZIP-Datei extrahiert?"), TEXT("Glamorous Toolkit"), MB_ICONWARNING);
-		return res + 1;
+ErrorMessage:
+		MessageBox(NULL, TEXT("Glamorous Toolkit konnte nicht gefunden oder gestartet werden!\n\nHaben Sie die ganze ZIP-Datei extrahiert?"), TEXT("Glamorous Toolkit"), MB_ICONWARNING);
+		return (INT)res + 1;
 	}
 	
 	return 0;
